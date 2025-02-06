@@ -65,3 +65,6 @@ end
 gem "jwt", "~> 2.10"
 gem 'dotenv-rails', groups: [:development, :test]
 
+
+
+gem "devise-jwt", "~> 0.12.1"
