@@ -37,12 +37,14 @@ module Api
 
       def forgot_password
         result = UsersService.forgot_password(forgot_password_params[:email])
+      
         if result[:success]
-          render json: { message: result[:message], otp: result[:otp] }, status: :ok
+          render json: { message: result[:message] }, status: :ok
         else
           render json: { error: result[:error] }, status: :bad_request
         end
       end
+      
 
       def reset_password
         user_id = params[:id]  # Extracting user ID from request params
@@ -60,7 +62,7 @@ module Api
       private
 
       def user_params
-        params.require(:user).permit(:name, :email, :password, :mobile_number)
+        params.require(:user).permit(:name, :email, :password, :phone_number)
       end
 
       def login_params
@@ -68,7 +70,7 @@ module Api
       end
 
       def forgot_password_params
-        params.require(:user).permit(:email)  
+        params.require(:user).permit(:email)
       end
 
       def reset_password_params
