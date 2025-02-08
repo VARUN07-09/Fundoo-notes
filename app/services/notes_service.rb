@@ -30,9 +30,18 @@ class NotesService
     def create_note
       cache_key = "user_#{@user.id}_notes"
       note = @user.notes.build(@params)
-      note.save ? { success: true, note: note } : { success: false, errors: note.errors.full_messages }
-      Rails.logger.info "🔄 Clearing cache in Redis"
-      REDIS.destroy(cache_key)
+      
+      if note.save
+        Rails.logger.info "🔄 Clearing cache in Redis"
+        Rails.logger.info "🔍 Redis Keys Before: #{REDIS.keys('*')}"
+        REDIS.del(cache_key)  # Delete cached notes so that fresh data is fetched
+    
+        Rails.logger.info "✅ Redis Keys After Deletion: #{REDIS.keys('*')}"
+    
+        return { success: true, note: note }  # ✅ Ensure proper hash return
+      else
+        return { success: false, errors: note.errors.full_messages }
+      end
     end
   
     def update_note(note)
