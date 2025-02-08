@@ -7,12 +7,15 @@ module Api
 
       def index
         begin
-          notes = NotesService.new(current_user, params)
-          result = notes.list_notes
-          Rails.logger.info "Getting Some Errors::::::====>>>>>> #{result}"
+          Rails.logger.info "notes_service "
+          notes_service = NotesService.new(current_user, params)
+          result = notes_service.list_notes  # This now uses Redis cache
+      
+          Rails.logger.info "✅ Notes retrieved: #{result}"
           render json: result, status: :ok
         rescue StandardError => e
-          render json: {errors: e.message, status: :internal_server_error}
+          Rails.logger.error "❌ Error fetching notes: #{e.message}"
+          render json: { errors: e.message }, status: :internal_server_error
         end
       end
 

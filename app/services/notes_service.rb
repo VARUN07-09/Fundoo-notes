@@ -5,12 +5,34 @@ class NotesService
     end
   
     def list_notes
-      @user.notes.where(deleted: false)
+      cache_key = "user_#{@user.id}_notes"  # Unique cache key for each user
+    
+      # Try to get cached notes from Redis
+      cached_notes = REDIS.get(cache_key)
+    
+      if cached_notes
+        Rails.logger.info "✅ Serving notes from Redis cache"
+        return JSON.parse(cached_notes)  # Return cached data
+      else
+        Rails.logger.info "🔄 Fetching notes from DB and caching in Redis"
+        notes = @user.notes.where(deleted: false)  # Fetch from DB
+    
+        # Store the notes in Redis with a unique cache key
+        REDIS.set(cache_key, notes.to_json)
+    
+        # Set an expiration time for the cached notes (10 minutes)
+        # REDIS.expire(cache_key, 10.minutes.to_i)
+    
+        return notes
+      end
     end
-  
+    
     def create_note
+      cache_key = "user_#{@user.id}_notes"
       note = @user.notes.build(@params)
       note.save ? { success: true, note: note } : { success: false, errors: note.errors.full_messages }
+      Rails.logger.info "🔄 Clearing cache in Redis"
+      REDIS.destroy(cache_key)
     end
   
     def update_note(note)
@@ -58,4 +80,5 @@ class NotesService
       note.collaborators << user
       { success: true, message: 'Collaborator added successfully', note: note }
     end
+    
   end

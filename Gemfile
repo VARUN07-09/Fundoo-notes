@@ -72,3 +72,5 @@ gem "devise-jwt", "~> 0.12.1"
 gem "bunny", "~> 2.23"
 
 gem "mail", "~> 2.8"
+
+gem "redis", "~> 5.3"
